@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:weightSum="1"
+    android:background="@color/sendMeduimGreenColor">
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/write"
+        android:textSize="25sp"
+        android:id="@+id/writeNewMessageButton"
+        android:gravity="center_horizontal|center_vertical|center"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="50dp"
+        android:layout_weight="0.15"
+        android:drawableLeft="@drawable/new_chat_icon"
+        android:background="@color/sendMeduimGreenColor"
+        android:textColor="@color/textColor"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/friends"
+        android:textSize="25sp"
+        android:id="@+id/viewFriendsButton"
+        android:gravity="center_horizontal|center_vertical|center"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="30dp"
+        android:layout_weight="0.15"
+        android:drawableLeft="@drawable/contacts_icon"
+        android:background="@color/sendMeduimGreenColor"
+        android:textColor="@color/textColor"/>
+
+    <ImageView
+        android:layout_width="130dp"
+        android:layout_height="130dp"
+        android:id="@+id/imageView"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="0.30"
+        android:src="@drawable/hatchat_icon" />
+</LinearLayout>

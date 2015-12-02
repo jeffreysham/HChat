@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">HatChat</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="write">New chat</string>
+    <string name="friends">Nearby HatChatters</string>
+    <string name="send">Send</string>
+    <string name="call">Call</string>
+    <string name="hint">Write a message...</string>
+    <string name="title_activity_nearby_friends">Nearby HatChatters</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_nearby_places">Nearby Places</string>
+</resources>

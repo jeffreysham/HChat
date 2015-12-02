@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:padding="5dp">
+    <ImageView
+        android:id="@+id/place_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/hatchat_icon"
+        android:maxWidth="100dp"
+        android:maxHeight="150dp"
+        android:minHeight="150dp"
+        android:minWidth="100dp"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/placeNameTextView"
+        android:textSize="20sp"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_toRightOf="@id/place_image"
+        android:text="Johns Hopkins University"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/placeAddressTextView"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@id/place_image"
+        android:layout_below="@+id/placeNameTextView"
+        android:textSize="20sp"
+        android:text="3400 North Charles Street, Baltimore, MD, USA"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/placeNumPeopleTextView"
+        android:textSize="20sp"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@id/place_image"
+        android:layout_below="@+id/placeAddressTextView"
+        android:text="Num People"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/placeDistanceToTextView"
+        android:textSize="20sp"
+        android:layout_marginRight="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@id/place_image"
+        android:layout_below="@+id/placeNumPeopleTextView"
+        android:text="Distance to"/>
+
+</RelativeLayout>
