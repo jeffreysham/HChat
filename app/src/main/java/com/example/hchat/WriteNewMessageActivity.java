@@ -13,9 +13,11 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
-import com.trnql.smart.activity.ActivityEntry;
 import com.trnql.smart.base.SmartCompatActivity;
 import com.trnql.smart.people.PersonEntry;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,9 +59,11 @@ public class WriteNewMessageActivity extends SmartCompatActivity {
     protected void smartPeopleChange(List<PersonEntry> people) {
         SharedPreferences pref = this.getApplicationContext().getSharedPreferences("preferences", Context.MODE_PRIVATE);
         String tempActivity = pref.getString("activity", null);
-        String useActivity = pref.getString("useActivity", null);
-
+        String useActivity = pref.getString("useActivity", "false");
+        peopleList = new ArrayList<>();
+        
         if (useActivity.equals("true")) {
+
             for (int i = 0; i < people.size(); i++) {
                 PersonEntry person = people.get(i);
                 if (person.getActivityString().equals(tempActivity)) {
@@ -78,14 +82,27 @@ public class WriteNewMessageActivity extends SmartCompatActivity {
 
     public String getPhoneNumber(PersonEntry person) {
         String phoneNumber = person.getDataPayload();
-        String tempString = phoneNumber.substring(phoneNumber.indexOf(",") + 1);
-        phoneNumber = tempString.substring(tempString.indexOf("=") + 1, tempString.indexOf(","));
+
+        try {
+            JSONObject jsonObject = new JSONObject(phoneNumber);
+            phoneNumber = jsonObject.getString("number");
+        } catch (JSONException e) {
+            e.printStackTrace();
+            phoneNumber = "";
+        }
+
         return phoneNumber;
     }
 
     public String getName(PersonEntry person) {
         String name = person.getDataPayload();
-        name = name.substring(name.indexOf("=")+1, name.indexOf(","));
+        try {
+            JSONObject jsonObject = new JSONObject(name);
+            name = jsonObject.getString("name");
+        } catch (JSONException e) {
+            e.printStackTrace();
+            name = "";
+        }
         return name;
     }
 

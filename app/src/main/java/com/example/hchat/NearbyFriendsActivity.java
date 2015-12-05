@@ -1,15 +1,19 @@
 package com.example.hchat;
 
 import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.ContentProviderOperation;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.os.IBinder;
 import android.provider.ContactsContract;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,11 +23,15 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
-import com.javadocmd.simplelatlng.util.LengthUnit;
+import com.trnql.smart.activity.ActivityEntry;
 import com.trnql.smart.base.SmartCompatActivity;
 import com.trnql.smart.people.PersonEntry;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,6 +47,37 @@ public class NearbyFriendsActivity extends SmartCompatActivity {
     private EditText inputSearch;
     private FriendListViewAdapter listViewAdapter;
 
+    private ContactsDataService contactsDataService;
+    private List<String> numbersList;
+    private Context context = this;
+    ServiceConnection contactsConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            ContactsDataService.ContactBinder binder = (ContactsDataService.ContactBinder) service;
+            contactsDataService = binder.getService();
+            numbersList = contactsDataService.getNumbers();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            contactsDataService = null;
+        }
+    };
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Intent i = new Intent(this,ContactsDataService.class);
+        bindService(i, contactsConnection, BIND_AUTO_CREATE);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.i("Stop", "In Splash: onStop()");
+        unbindService(contactsConnection);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,10 +85,6 @@ public class NearbyFriendsActivity extends SmartCompatActivity {
         peopleListView = (ListView) findViewById(R.id.contact_list);
 
         final Context context = this;
-
-        SharedPreferences pref = this.getApplicationContext().getSharedPreferences("preferences", Context.MODE_PRIVATE);
-        String tempNumber = pref.getString("phone number", null);
-        getPeopleManager().setUserToken(tempNumber);
 
         //Search through list
         inputSearch = (EditText) findViewById(R.id.inputSearch);
@@ -82,11 +117,12 @@ public class NearbyFriendsActivity extends SmartCompatActivity {
 
     @Override
     protected void smartPeopleChange(List<PersonEntry> people) {
-        //TODO: test if .contains works to remove duplicates
         //TODO: test if activity thing works
         SharedPreferences pref = this.getApplicationContext().getSharedPreferences("preferences", Context.MODE_PRIVATE);
         String tempActivity = pref.getString("activity", null);
         String useActivity = pref.getString("useActivity", "false");
+
+        Log.i("place", "in smart people change");
 
         if (useActivity.equals("true")) {
             peopleList = new ArrayList<>();
@@ -108,6 +144,7 @@ public class NearbyFriendsActivity extends SmartCompatActivity {
                 peopleList = new ArrayList<>();
             }
         }
+        Log.i("people list", peopleList.toString());
         sortUsers();
         displayUsers();
     }
@@ -120,10 +157,10 @@ public class NearbyFriendsActivity extends SmartCompatActivity {
                 int dist2 = rhs.getDistanceFromUser();
                 if (dist1 < dist2) {
                     return -1;
-                } else if (dist1 == dist2) {
-                    return 0;
-                } else {
+                } else if (dist1 > dist2) {
                     return 1;
+                } else {
+                    return 0;
                 }
             }
         });
@@ -144,8 +181,6 @@ public class NearbyFriendsActivity extends SmartCompatActivity {
             listViewAdapter.updateList(peopleList);
             listViewAdapter.notifyDataSetChanged();
         }
-
-
     }
 
     private void handleItemClick(ListView l, View v, int position, long id) {
@@ -175,55 +210,72 @@ public class NearbyFriendsActivity extends SmartCompatActivity {
     public void addContact(PersonEntry person) {
         String name = getName(person);
         String phone = getPhoneNumber(person);
+        if (!numbersList.contains(phone)) {
+            try {
+                ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
+                ops.add(ContentProviderOperation
+                        .newInsert(ContactsContract.RawContacts.CONTENT_URI)
+                        .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, null)
+                        .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, null)
+                        .build());
+                ops.add(ContentProviderOperation
+                        .newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                        .withValue(
+                                ContactsContract.Data.MIMETYPE,
+                                ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
+                        .withValue(
+                                ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME,
+                                name).build());
+                ops.add(ContentProviderOperation
+                        .newInsert(ContactsContract.Data.CONTENT_URI)
+                        .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
+                        .withValue(
+                                ContactsContract.Data.MIMETYPE,
+                                ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
+                        .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER,
+                                phone)
+                        .withValue(ContactsContract.CommonDataKinds.Phone.TYPE,
+                                ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE).build());
 
-        try {
-            ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
-            ops.add(ContentProviderOperation
-                    .newInsert(ContactsContract.RawContacts.CONTENT_URI)
-                    .withValue(ContactsContract.RawContacts.ACCOUNT_TYPE, null)
-                    .withValue(ContactsContract.RawContacts.ACCOUNT_NAME, null)
-                    .build());
-            ops.add(ContentProviderOperation
-                    .newInsert(ContactsContract.Data.CONTENT_URI)
-                    .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
-                    .withValue(
-                            ContactsContract.Data.MIMETYPE,
-                            ContactsContract.CommonDataKinds.StructuredName.CONTENT_ITEM_TYPE)
-                    .withValue(
-                            ContactsContract.CommonDataKinds.StructuredName.GIVEN_NAME,
-                            name).build());
-            ops.add(ContentProviderOperation
-                    .newInsert(ContactsContract.Data.CONTENT_URI)
-                    .withValueBackReference(ContactsContract.Data.RAW_CONTACT_ID, 0)
-                    .withValue(
-                            ContactsContract.Data.MIMETYPE,
-                            ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE)
-                    .withValue(ContactsContract.CommonDataKinds.Phone.NUMBER,
-                            phone)
-                    .withValue(ContactsContract.CommonDataKinds.Phone.TYPE,
-                            ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE).build());
+                getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
 
-            getContentResolver().applyBatch(ContactsContract.AUTHORITY, ops);
-
-            Toast.makeText(this, "Added contact successfully",Toast.LENGTH_SHORT).show();
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Error adding contact",Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Added contact successfully",Toast.LENGTH_SHORT).show();
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(this, "Error adding contact",Toast.LENGTH_SHORT).show();
+            }
+        } else {
+            Toast.makeText(this, "Contact already in phone",Toast.LENGTH_SHORT).show();
         }
+
 
 
     }
 
     public String getPhoneNumber(PersonEntry person) {
         String phoneNumber = person.getDataPayload();
-        String tempString = phoneNumber.substring(phoneNumber.indexOf(",") + 1);
-        phoneNumber = tempString.substring(tempString.indexOf("=") + 1, tempString.indexOf(","));
+
+        try {
+            JSONObject jsonObject = new JSONObject(phoneNumber);
+            phoneNumber = jsonObject.getString("number");
+        } catch (JSONException e) {
+            e.printStackTrace();
+            phoneNumber = "";
+        }
         return phoneNumber;
     }
 
     public String getName(PersonEntry person) {
         String name = person.getDataPayload();
-        name = name.substring(name.indexOf("=")+1, name.indexOf(","));
+
+        try {
+            JSONObject jsonObject = new JSONObject(name);
+            name = jsonObject.getString("name");
+        } catch (JSONException e) {
+            e.printStackTrace();
+            name = "";
+        }
         return name;
     }
 
@@ -259,11 +311,13 @@ public class NearbyFriendsActivity extends SmartCompatActivity {
         final EditText nameInput = (EditText) alertView.findViewById(R.id.editNameInput);
         final EditText descriptionInput = (EditText) alertView.findViewById(R.id.editDescriptionInput);
         final CheckBox checkBox = (CheckBox) alertView.findViewById(R.id.checkBox);
+        final TextView activityInput = (TextView) alertView.findViewById(R.id.editActivityInput);
 
         SharedPreferences pref = this.getApplicationContext().getSharedPreferences("preferences", Context.MODE_PRIVATE);
         String result = pref.getString("useActivity", "false");
         String desc = pref.getString("description", "");
         String name = pref.getString("name", "");
+        String activity = pref.getString("activity", "");
         if (result.equals("true")) {
             checkBox.setChecked(true);
         } else {
@@ -276,6 +330,12 @@ public class NearbyFriendsActivity extends SmartCompatActivity {
 
         if (name.length() > 0) {
             nameInput.setText(name);
+        }
+
+        if (activity.length() > 0) {
+            activityInput.setText("Activity Status: " + activity);
+        } else {
+            activityInput.setText("Activity Status: Not Available");
         }
 
         alertDialogBuilder.setCancelable(false)
@@ -307,22 +367,49 @@ public class NearbyFriendsActivity extends SmartCompatActivity {
             String tempNumber = pref.getString("phone number", null);
             String tempDesc = pref.getString("description", "");
             getPeopleManager().setUserToken(tempNumber);
-            getPeopleManager().setDataPayload("name=" + name + ", number=" + tempNumber + ", description="+tempDesc);
-            pref.edit().putString("name", name).commit();
+
+            String dataString = "";
+            JSONObject object = new JSONObject();
+            try {
+                object.put("name", name);
+                object.put("number", tempNumber);
+                object.put("description", tempDesc);
+                dataString = object.toString();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            getPeopleManager().setDataPayload(dataString);
+
+            //getPeopleManager().setDataPayload("name=" + name + ", number=" + tempNumber + ", description="+tempDesc);
+            pref.edit().putString("name", name).apply();
         }
 
         if (description.length() > 0) {
             String tempNumber = pref.getString("phone number", null);
             String tempName = pref.getString("name", null);
             getPeopleManager().setUserToken(tempNumber);
-            getPeopleManager().setDataPayload("name=" + tempName + ", number=" + tempNumber+", description=" + description);
-            pref.edit().putString("description", description).commit();
+
+            String dataString = "";
+            JSONObject object = new JSONObject();
+            try {
+                object.put("name", tempName);
+                object.put("number", tempNumber);
+                object.put("description", description);
+                dataString = object.toString();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            getPeopleManager().setDataPayload(dataString);
+            //getPeopleManager().setDataPayload("name=" + tempName + ", number=" + tempNumber+", description=" + description);
+            pref.edit().putString("description", description).apply();
         }
 
         if (checkBox.isChecked()) {
-            pref.edit().putString("useActivity", "true").commit();
+            pref.edit().putString("useActivity", "true").apply();
         } else {
-            pref.edit().putString("useActivity", "false").commit();
+            pref.edit().putString("useActivity", "false").apply();
         }
 
     }

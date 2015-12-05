@@ -25,6 +25,13 @@
         android:layout_height="wrap_content"
         android:hint="Change description..."/>
 
+    <TextView
+        android:id="@+id/editActivityInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Activity Status: "
+        android:textAppearance="?android:attr/textAppearanceMedium"/>
+
     <CheckBox
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

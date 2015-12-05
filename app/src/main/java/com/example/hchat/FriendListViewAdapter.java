@@ -2,23 +2,24 @@ package com.example.hchat;
 
 import android.app.Activity;
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.javadocmd.simplelatlng.util.LengthUnit;
 import com.trnql.smart.people.PersonEntry;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Jeffrey Sham on 5/25/2015.
+ * Created by Jeffrey Sham on 12/4/2015.
  */
 public class FriendListViewAdapter extends ArrayAdapter<PersonEntry>{
     private Context context;
@@ -81,11 +82,11 @@ public class FriendListViewAdapter extends ArrayAdapter<PersonEntry>{
     public String getPhoneNumber(PersonEntry person) {
         String phoneNumber = person.getDataPayload();
 
-        if (phoneNumber != null) {
-            String tempString = phoneNumber.substring(phoneNumber.indexOf(",") + 1);
-
-            phoneNumber = tempString.substring(tempString.indexOf("=") + 1, tempString.indexOf(","));
-        } else {
+        try {
+            JSONObject jsonObject = new JSONObject(phoneNumber);
+            phoneNumber = jsonObject.getString("number");
+        } catch (JSONException e) {
+            e.printStackTrace();
             phoneNumber = "";
         }
 
@@ -94,9 +95,11 @@ public class FriendListViewAdapter extends ArrayAdapter<PersonEntry>{
 
     public String getDescription(PersonEntry person) {
         String desc = person.getDataPayload();
-        if (desc != null) {
-            desc = desc.substring(desc.lastIndexOf("=")+1);
-        } else {
+        try {
+            JSONObject jsonObject = new JSONObject(desc);
+            desc = jsonObject.getString("description");
+        } catch (JSONException e) {
+            e.printStackTrace();
             desc = "";
         }
 
@@ -105,19 +108,20 @@ public class FriendListViewAdapter extends ArrayAdapter<PersonEntry>{
 
     public String getName(PersonEntry person) {
         String name = person.getDataPayload();
-        if (name!=null) {
-            name = name.substring(name.indexOf("=")+1, name.indexOf(","));
-        } else {
+
+        try {
+            JSONObject jsonObject = new JSONObject(name);
+            name = jsonObject.getString("name");
+        } catch (JSONException e) {
+            e.printStackTrace();
             name = "";
         }
-
         return name;
     }
 
     public double getDistanceTo(PersonEntry person) {
         int distance = person.getDistanceFromUser(LengthUnit.METER);
-        double dist = distance * .000621371;
-        return dist;
+        return distance * .000621371;
     }
 
     @Override
