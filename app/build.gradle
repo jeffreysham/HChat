@@ -20,7 +20,7 @@ android {
     buildToolsVersion "22.0.1"
 
     defaultConfig {
-        applicationId "com.example.hchat"
+        applicationId "com.jeffreysham.hchat"
         minSdkVersion 18
         targetSdkVersion 22
         versionCode 1
@@ -40,5 +40,4 @@ dependencies {
 //    compile (name: 'lib-release.aar', ext: 'aar')
     compile 'com.android.support:appcompat-v7:22.2.0'
     compile 'com.google.android.gms:play-services:7.5.0'
-    compile 'com.scottyab:secure-preferences-lib:0.1.4'
 }
