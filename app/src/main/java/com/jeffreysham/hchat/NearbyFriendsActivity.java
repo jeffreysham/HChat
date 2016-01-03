@@ -8,9 +8,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.location.LocationManager;
 import android.os.IBinder;
 import android.provider.ContactsContract;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -82,7 +84,7 @@ public class NearbyFriendsActivity extends SmartCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_nearby_friends);
         peopleListView = (ListView) findViewById(R.id.contact_list);
-
+        peopleList = new ArrayList<>();
         final Context context = this;
 
         //Search through list
@@ -112,6 +114,41 @@ public class NearbyFriendsActivity extends SmartCompatActivity {
                 startActivity(intent);
             }
         });
+
+        LocationManager lm = (LocationManager)context.getSystemService(Context.LOCATION_SERVICE);
+        boolean gps_enabled = false;
+        boolean network_enabled = false;
+
+        try {
+            gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        } catch(Exception ex) {}
+
+        try {
+            network_enabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        } catch(Exception ex) {}
+
+        if(!gps_enabled && !network_enabled) {
+            // notify user
+            final AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+            dialog.setTitle("Error: Location Services");
+            dialog.setMessage("Location Services are disabled. Please enable it on your phone.");
+            dialog.setPositiveButton("Open Settings", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                    // TODO Auto-generated method stub
+                    Intent myIntent = new Intent( Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                    context.startActivity(myIntent);
+                    //get gps
+                }
+            });
+            dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface paramDialogInterface, int paramInt) {
+                }
+            });
+            dialog.show();
+        }
     }
 
     @Override
