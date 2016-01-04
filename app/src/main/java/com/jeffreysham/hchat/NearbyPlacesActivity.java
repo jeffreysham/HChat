@@ -57,7 +57,9 @@ public class NearbyPlacesActivity extends SmartCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                NearbyPlacesActivity.this.listViewAdapter.getFilter().filter(s);
+                if(placesList.size() > 0) {
+                    NearbyPlacesActivity.this.listViewAdapter.getFilter().filter(s);
+                }
             }
 
             @Override

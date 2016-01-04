@@ -97,7 +97,9 @@ public class NearbyFriendsActivity extends SmartCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                NearbyFriendsActivity.this.listViewAdapter.getFilter().filter(s);
+                if (peopleList.size() > 0) {
+                    NearbyFriendsActivity.this.listViewAdapter.getFilter().filter(s);
+                }
             }
 
             @Override
