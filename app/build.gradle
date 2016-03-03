@@ -23,7 +23,7 @@ android {
         applicationId "com.jeffreysham.hchat"
         minSdkVersion 18
         targetSdkVersion 22
-        versionCode 3
+        versionCode 4
         versionName "1.0"
     }
     buildTypes {
@@ -39,5 +39,7 @@ dependencies {
     compile 'com.trnql:lib-release:1.0.0@aar'
 //    compile (name: 'lib-release.aar', ext: 'aar')
     compile 'com.android.support:appcompat-v7:22.2.0'
-    compile 'com.google.android.gms:play-services:7.5.0'
+    compile 'com.google.android.gms:play-services-location:7.5.0'
+    compile 'com.google.android.gms:play-services-gcm:7.5.0'
+    compile 'com.google.android.gms:play-services-nearby:7.5.0'
 }

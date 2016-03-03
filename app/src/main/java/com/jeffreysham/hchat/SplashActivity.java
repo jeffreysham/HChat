@@ -1,12 +1,15 @@
 package com.jeffreysham.hchat;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 
 import android.os.AsyncTask;
@@ -74,8 +77,32 @@ public class SplashActivity extends Activity {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             contactsDataService.storeContactNumbers(numbersList);
-            Intent intent = new Intent(context, MainActivity.class);
-            startActivity(intent);
+            SharedPreferences pref = context.getApplicationContext().getSharedPreferences("preferences", Context.MODE_PRIVATE);
+            String phoneNumber = pref.getString("phone number", null);
+            if (phoneNumber != null) {
+                Intent intent = new Intent(context, MainActivity.class);
+                startActivity(intent);
+            } else {
+                String message = "HatChat Messaging asks users for their location, name, and phone number. " +
+                        "This information is used in order to create your profile and locate nearby users. " +
+                        "Also, your phone number will be used so that you can call or message nearby users. " +
+                        "Next, your contacts are accessed in order to ensure that no duplicate contacts will be " +
+                        "added. This application will never collect or transmit your personal data without " +
+                        "your consent.";
+
+                AlertDialog.Builder alert = new AlertDialog.Builder(context);
+                alert.setTitle("Privacy Policy")
+                        .setMessage(message)
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                Intent intent = new Intent(context,MainActivity.class);
+                                startActivity(intent);
+                            }
+                        });
+                alert.create().show();
+            }
+
         }
 
         @Override

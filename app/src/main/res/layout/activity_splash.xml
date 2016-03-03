@@ -8,7 +8,7 @@
         android:layout_height="match_parent"
         android:id="@+id/imageView2"
         android:layout_gravity="center_horizontal"
-        android:src="@drawable/hatchat_icon"
+        android:src="@drawable/hatchat_icon_splash"
         android:background="@color/sendMeduimGreenColor" />
 
     <TextView
